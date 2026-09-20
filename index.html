@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformasi Bahan Ajar PAI ke Arah Digital</title>
+<style>
+  /* ============ RESET & TOKENS ============ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0f1214;
+    --bg-2:      #15191d;
+    --card:      #1a1f24;
+    --card-hi:   #21272d;
+    --fg:        #e6e9ec;
+    --fg-dim:    #8b949e;
+    --fg-mute:   #66707a;
+    --accent:    #4dd0e1;
+    --accent-2:  #66bb6a;
+    --warn:      #ffb74d;
+    --danger:    #ef5350;
+    --purple:    #b388ff;
+    --border:    rgba(255,255,255,.08);
+    --border-hi: rgba(255,255,255,.16);
+    --sans:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --mono:      'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ============ DECK & SLIDE ============ */
+  .deck {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6vh 7vw;
+  }
+  .slide.active {
+    display: flex;
+    animation: slideFadeIn .5s ease both;
+  }
+  .slide-cover.active { display: grid; }
+
+  /* ============ KEYFRAMES ============ */
+  @keyframes slideFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInOnly {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes grow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+
+  /* ============ AUTO-STAGGER: DIRECT CHILDREN ============ */
+  .slide.active > * {
+    animation: fadeUp .6s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .slide.active > *:nth-child(1) { animation-delay: .05s; }
+  .slide.active > *:nth-child(2) { animation-delay: .15s; }
+  .slide.active > *:nth-child(3) { animation-delay: .25s; }
+  .slide.active > *:nth-child(4) { animation-delay: .35s; }
+  .slide.active > *:nth-child(5) { animation-delay: .45s; }
+  .slide.active > *:nth-child(6) { animation-delay: .55s; }
+
+  /* ============ NESTED STAGGER (cards, list items) ============ */
+  .slide.active .challenge-grid .challenge,
+  .slide.active .ref-list .ref-item,
+  .slide.active .flow .flow-step,
+  .slide.active .dash-grid .dash-card {
+    animation: fadeUp .55s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .slide.active .challenge-grid .challenge:nth-child(1),
+  .slide.active .ref-list .ref-item:nth-child(1),
+  .slide.active .flow .flow-step:nth-child(1),
+  .slide.active .dash-grid .dash-card:nth-child(1) { animation-delay: .4s; }
+  .slide.active .challenge-grid .challenge:nth-child(2),
+  .slide.active .ref-list .ref-item:nth-child(2),
+  .slide.active .flow .flow-step:nth-child(2),
+  .slide.active .dash-grid .dash-card:nth-child(2) { animation-delay: .5s; }
+  .slide.active .challenge-grid .challenge:nth-child(3),
+  .slide.active .ref-list .ref-item:nth-child(3),
+  .slide.active .flow .flow-step:nth-child(3) { animation-delay: .6s; }
+  .slide.active .ref-list .ref-item:nth-child(4) { animation-delay: .7s; }
+  .slide.active .ref-list .ref-item:nth-child(5) { animation-delay: .8s; }
+
+  /* ADDIE items — pakai fadeInOnly supaya tidak bentrok dengan transform positioning */
+  .slide.active .addie-cycle .addie-item {
+    animation: fadeInOnly .5s ease both;
+  }
+  .slide.active .addie-cycle .addie-item:nth-child(2) { animation-delay: .45s; }
+  .slide.active .addie-cycle .addie-item:nth-child(3) { animation-delay: .55s; }
+  .slide.active .addie-cycle .addie-item:nth-child(4) { animation-delay: .65s; }
+  .slide.active .addie-cycle .addie-item:nth-child(5) { animation-delay: .75s; }
+  .slide.active .addie-cycle .addie-item:nth-child(6) { animation-delay: .85s; }
+
+  /* ============ COMMON TYPOGRAPHY ============ */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .74rem;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 22px; height: 1px;
+    background: var(--accent);
+    opacity: .7;
+  }
+  h1 {
+    font-size: clamp(1.9rem, 3.4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -.015em;
+    margin-bottom: 1rem;
+  }
+  h2 {
+    font-size: clamp(1.35rem, 2.3vw, 2rem);
+    font-weight: 650;
+    line-height: 1.2;
+    letter-spacing: -.01em;
+    margin-bottom: 1.4rem;
+    max-width: 26ch;
+  }
+  h2 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  p { font-size: clamp(.9rem, 1.1vw, 1rem); color: var(--fg); }
+
+  /* ============ SLIDE 1 — COVER ============ */
+  .slide-cover {
+    padding: 0;
+    grid-template-columns: 1.25fr 1fr;
+    align-items: stretch;
+  }
+  .cover-left {
+    padding: 9vh 4vw 9vh 8vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+  .cover-right {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6vh 6vw 6vh 2vw;
+    border-left: 1px solid var(--border);
+    background:
+      radial-gradient(circle at 30% 30%, rgba(77,208,225,.08), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(179,136,255,.06), transparent 55%);
+    overflow: hidden;
+  }
+  .cover-right::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(77,208,225,.18) 1px, transparent 1.4px);
+    background-size: 26px 26px;
+    mask-image: radial-gradient(circle at center, black 30%, transparent 78%);
+    -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 78%);
+    opacity: .55;
+  }
+  .cover h1 {
+    font-size: clamp(2rem, 3.6vw, 3.1rem);
+    max-width: 16ch;
+    margin-bottom: 1.1rem;
+  }
+  .cover .subtitle {
+    font-size: clamp(.95rem, 1.2vw, 1.1rem);
+    color: var(--fg-dim);
+    max-width: 34ch;
+    margin-bottom: 2.6rem;
+    line-height: 1.6;
+  }
+  .cover .divider {
+    width: 48px; height: 2px;
+    background: var(--accent);
+    margin-bottom: 1.6rem;
+  }
+  .cover .identity {
+    font-size: .92rem;
+    color: var(--fg-dim);
+    line-height: 1.85;
+  }
+  .cover .identity strong {
+    display: block;
+    color: var(--fg);
+    font-weight: 600;
+    font-size: 1.02rem;
+    margin-bottom: .15rem;
+    letter-spacing: -.005em;
+  }
+  .cover .identity .prodi {
+    color: var(--fg-mute);
+    font-size: .85rem;
+  }
+
+  .stat-card {
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(26,31,36,.9) 0%, rgba(21,25,29,.9) 100%);
+    border: 1px solid var(--border-hi);
+    border-radius: 16px;
+    padding: 2.4rem 2.2rem 2rem;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.03);
+    animation: fadeUp .7s .5s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .stat-card .stat-label-top {
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    margin-bottom: 1.2rem;
+  }
+  .stat-card .stat-number {
+    font-size: clamp(3rem, 5.5vw, 4.4rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.03em;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: .4rem;
+  }
+  .stat-card .stat-number span { font-size: .55em; font-weight: 600; }
+  .stat-card .stat-desc {
+    font-size: .85rem;
+    color: var(--fg-dim);
+    line-height: 1.55;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+  .stat-card .stat-source {
+    font-family: var(--mono);
+    font-size: .66rem;
+    letter-spacing: .12em;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+  }
+
+  /* ============ SLIDE 2 — SPLIT SCREEN ============ */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+    margin-top: 1rem;
+    height: 55vh;
+    max-height: 460px;
+  }
+  .split-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .split-panel.old { border-color: rgba(255,255,255,.06); }
+  .split-panel.new {
+    border-color: rgba(77,208,225,.3);
+    background: linear-gradient(180deg, rgba(77,208,225,.05) 0%, rgba(26,31,36,1) 60%);
+  }
+  .split-panel .tag {
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+  }
+  .split-panel.new .tag { color: var(--accent); }
+  .split-panel h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -.005em;
+  }
+  .split-panel .visual {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .split-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--fg-mute);
+    letter-spacing: .2em;
+    writing-mode: vertical-rl;
+    padding: 0 .3rem;
+    position: relative;
+  }
+  .split-divider::before,
+  .split-divider::after {
+    content: "";
+    flex: 1;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--border), transparent);
+  }
+
+  .book-stack { display: flex; flex-direction: column; gap: 6px; width: 70%; }
+  .book-stack .book {
+    height: 22px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #333 0%, #2a2a2a 100%);
+    border: 1px solid #3a3a3a;
+    position: relative;
+  }
+  .book-stack .book::before {
+    content: "";
+    position: absolute;
+    left: 6px; top: 50%;
+    transform: translateY(-50%);
+    width: 55%; height: 2px;
+    background: #444;
+    box-shadow: 0 6px 0 #444;
+  }
+  .book-stack .book:nth-child(1) { width: 100%; background: linear-gradient(90deg, #3a3228, #2c2820); }
+  .book-stack .book:nth-child(2) { width: 92%;  background: linear-gradient(90deg, #2f3438, #252a2e); }
+  .book-stack .book:nth-child(3) { width: 96%;  background: linear-gradient(90deg, #342a2e, #292026); }
+  .book-stack .book:nth-child(4) { width: 88%;  background: linear-gradient(90deg, #2a3234, #21282a); }
+  .book-stack .book:nth-child(5) { width: 94%;  background: linear-gradient(90deg, #33302a, #282620); }
+  .book-stack .book:nth-child(6) { width: 90%;  background: linear-gradient(90deg, #2e2a34, #25212a); }
+
+  .phone {
+    width: 130px;
+    aspect-ratio: 9/18;
+    border-radius: 18px;
+    background: #0d1012;
+    border: 2px solid #2a3238;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-shadow: 0 20px 50px -10px rgba(77,208,225,.2);
+    position: relative;
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 5px; left: 50%;
+    transform: translateX(-50%);
+    width: 34px; height: 3px;
+    background: #2a3238;
+    border-radius: 2px;
+  }
+  .phone-video {
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #1c2629, #13202a);
+    border-radius: 6px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: .75rem;
+    border: 1px solid rgba(77,208,225,.2);
+  }
+  .phone-line { height: 5px; border-radius: 2px; background: #2a3238; }
+  .phone-line.w80 { width: 80%; }
+  .phone-line.w60 { width: 60%; }
+  .phone-line.accent { background: rgba(77,208,225,.3); }
+
+  /* ============ SLIDE 3 — TRANSFORMATION ============ */
+  .transform {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    margin-top: .5rem;
+  }
+  .transform-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.6rem 1.4rem;
+    text-align: center;
+  }
+  .transform-box .stage-label {
+    font-family: var(--mono);
+    font-size: .66rem;
+    letter-spacing: .2em;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .transform-box h3 { font-size: 1rem; font-weight: 600; margin-bottom: .35rem; }
+  .transform-box .sub { font-size: .82rem; color: var(--fg-dim); }
+  .transform-box.from { opacity: .75; }
+  .transform-box.to {
+    border-color: rgba(77,208,225,.35);
+    background: linear-gradient(180deg, rgba(77,208,225,.06) 0%, var(--card) 70%);
+  }
+  .transform-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .16em;
+    gap: .5rem;
+  }
+  .transform-arrow .arrow-line { font-size: 1.6rem; line-height: 1; color: var(--accent); }
+
+  .eco-icons { display: flex; justify-content: center; gap: .55rem; margin-top: 1rem; flex-wrap: wrap; }
+  .eco-icons .eco {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: rgba(77,208,225,.08);
+    border: 1px solid rgba(77,208,225,.25);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent); font-size: 1.05rem;
+  }
+  .book-mini {
+    width: 66px; height: 88px;
+    background: linear-gradient(180deg, #2a3338, #1d2428);
+    border: 1px solid #35404a;
+    border-radius: 4px;
+    margin: 0 auto 1rem;
+    position: relative;
+  }
+  .book-mini::before {
+    content: "";
+    position: absolute;
+    inset: 12px 10px auto 10px;
+    height: 2px; background: #3a444d;
+    box-shadow: 0 8px 0 #3a444d, 0 16px 0 #3a444d, 0 24px 0 #3a444d, 0 32px 0 #3a444d;
+  }
+
+  .slide3-notes { display: flex; gap: 1rem; margin-top: 1.4rem; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .45rem .9rem;
+    border-radius: 999px;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .06em;
+    color: var(--fg-dim);
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.02);
+  }
+  .chip.danger { color: var(--danger); border-color: rgba(239,83,80,.3); background: rgba(239,83,80,.06); }
+  .chip.warn   { color: var(--warn);   border-color: rgba(255,183,77,.3); background: rgba(255,183,77,.06); }
+
+  /* ============ SLIDE 4 — CHALLENGES ============ */
+  .challenge-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    margin-top: .5rem;
+  }
+  .challenge {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s ease;
+  }
+  .challenge:hover { transform: translateY(-3px); }
+  .challenge::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+  }
+  .challenge.c1::before { background: linear-gradient(90deg, var(--warn), transparent); }
+  .challenge.c2::before { background: linear-gradient(90deg, var(--danger), transparent); }
+  .challenge.c3::before { background: linear-gradient(90deg, var(--purple), transparent); }
+
+  .challenge .ch-num {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .18em;
+    color: var(--fg-mute);
+  }
+  .challenge .ch-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+  }
+  .challenge.c1 .ch-icon { background: rgba(255,183,77,.1); color: var(--warn); }
+  .challenge.c2 .ch-icon { background: rgba(239,83,80,.1);  color: var(--danger); }
+  .challenge.c3 .ch-icon { background: rgba(179,136,255,.1);color: var(--purple); }
+  .challenge h3 { font-size: .98rem; font-weight: 650; letter-spacing: -.005em; line-height: 1.35; }
+  .challenge p { font-size: .82rem; color: var(--fg-dim); line-height: 1.6; }
+
+  /* ============ SLIDE 5 — ADDIE ============ */
+  .addie-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap: 2.4rem;
+    align-items: center;
+    margin-top: .4rem;
+  }
+  .addie-text h3 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .8rem;
+  }
+  .addie-text p {
+    font-size: .9rem;
+    line-height: 1.75;
+    color: var(--fg-dim);
+    margin-bottom: 1.2rem;
+  }
+  .soft-list { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .soft-list .soft {
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .06em;
+    padding: .35rem .75rem;
+    border-radius: 6px;
+    color: var(--fg);
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+  }
+
+  .addie-cycle {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+  .addie-cycle::before {
+    content: "";
+    position: absolute;
+    inset: 12%;
+    border-radius: 50%;
+    border: 1px dashed rgba(77,208,225,.22);
+  }
+  .addie-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(77,208,225,.14), rgba(77,208,225,.02) 70%);
+    border: 1px solid rgba(77,208,225,.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: .62rem;
+    color: var(--accent);
+    letter-spacing: .12em;
+    line-height: 1.3;
+  }
+  .addie-center strong {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: .15rem;
+    letter-spacing: 0;
+  }
+  .addie-item {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: var(--card);
+    border: 1px solid var(--border-hi);
+    border-radius: 10px;
+    padding: .55rem .8rem;
+    font-size: .74rem;
+    font-weight: 600;
+    letter-spacing: -.005em;
+    color: var(--fg);
+    white-space: nowrap;
+    box-shadow: 0 6px 20px -6px rgba(0,0,0,.6);
+  }
+  .addie-item small {
+    display: block;
+    font-family: var(--mono);
+    font-size: .55rem;
+    letter-spacing: .16em;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 1px;
+  }
+  .addie-item:nth-child(2) { top: 12%; left: 50%; }
+  .addie-item:nth-child(3) { top: 39%; left: 86%; }
+  .addie-item:nth-child(4) { top: 83%; left: 72%; }
+  .addie-item:nth-child(5) { top: 83%; left: 28%; }
+  .addie-item:nth-child(6) { top: 39%; left: 14%; }
+
+  /* ============ SLIDE 6 — BAR CHART ============ */
+  .chart-area {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 2.4rem;
+    align-items: center;
+    margin-top: .5rem;
+  }
+  .chart-bars { display: flex; flex-direction: column; gap: 1.1rem; }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 96px 1fr 52px;
+    gap: .9rem;
+    align-items: center;
+  }
+  .bar-label {
+    font-family: var(--mono);
+    font-size: .74rem;
+    color: var(--fg-dim);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .bar-track {
+    height: 14px;
+    background: #1a1f24;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent-2) 0%, var(--accent) 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .slide.active .bar-fill {
+    animation: grow 1.1s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .slide.active .bar-row:nth-child(1) .bar-fill { animation-delay: .45s; }
+  .slide.active .bar-row:nth-child(2) .bar-fill { animation-delay: .58s; }
+  .slide.active .bar-row:nth-child(3) .bar-fill { animation-delay: .71s; }
+  .slide.active .bar-row:nth-child(4) .bar-fill { animation-delay: .84s; }
+
+  .bar-value {
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--accent);
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .chart-summary {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem 1.4rem;
+    text-align: center;
+    animation: fadeUp .6s .35s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .chart-summary .big-avg {
+    font-size: clamp(2.6rem, 4.5vw, 3.4rem);
+    font-weight: 800;
+    letter-spacing: -.03em;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent-2) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: .35rem;
+  }
+  .chart-summary .avg-label {
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .chart-summary p { font-size: .82rem; color: var(--fg-dim); line-height: 1.6; }
+
+  /* ============ SLIDE 7 — DASHBOARD ============ */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.4rem;
+    margin-top: .5rem;
+  }
+  .dash-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem 1.6rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .dash-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+  }
+  .dash-card.pref::before { background: linear-gradient(90deg, var(--accent), transparent); }
+  .dash-card.pass::before { background: linear-gradient(90deg, var(--accent-2), transparent); }
+
+  .dash-card .dash-label {
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .dash-card .dash-label .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .dash-card.pass .dash-label .dot {
+    background: var(--accent-2);
+    box-shadow: 0 0 8px var(--accent-2);
+  }
+
+  /* Angka besar dengan count-up */
+  .dash-number {
+    font-size: clamp(3rem, 5vw, 4.2rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.035em;
+    margin-bottom: .5rem;
+    display: inline-flex;
+    align-items: baseline;
+  }
+  .dash-number .count-num {
+    font-variant-numeric: tabular-nums;
+  }
+  .dash-card.pref .dash-number .count-num {
+    background: linear-gradient(135deg, #ffffff 0%, var(--accent) 120%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .dash-card.pass .dash-number .count-num {
+    background: linear-gradient(135deg, #ffffff 0%, var(--accent-2) 120%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .dash-number .pct {
+    font-size: .5em;
+    font-weight: 700;
+    margin-left: .03em;
+  }
+  .dash-card.pref .dash-number .pct { color: var(--accent); }
+  .dash-card.pass .dash-number .pct { color: var(--accent-2); }
+
+  .dash-card .dash-desc { font-size: .88rem; color: var(--fg-dim); line-height: 1.55; }
+
+  .progress-comparison {
+    margin-top: 1.6rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem 1.5rem;
+  }
+  .progress-comparison .pc-label {
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    margin-bottom: 1rem;
+  }
+  .pc-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 60px;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: .6rem;
+  }
+  .pc-row:last-child { margin-bottom: 0; }
+  .pc-label-side {
+    font-size: .8rem;
+    color: var(--fg-dim);
+    font-family: var(--mono);
+    letter-spacing: .06em;
+  }
+  .pc-track {
+    height: 12px;
+    background: #12161a;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .pc-fill {
+    height: 100%;
+    border-radius: 3px;
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .pc-fill.before {
+    background: linear-gradient(90deg, #4a3a2e, #6b5442);
+    width: 46.7%;
+  }
+  .pc-fill.after {
+    background: linear-gradient(90deg, var(--accent-2), var(--accent));
+    width: 90%;
+  }
+  .slide.active .pc-fill {
+    animation: grow 1.1s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .slide.active .pc-row:nth-child(2) .pc-fill { animation-delay: .55s; }
+  .slide.active .pc-row:nth-child(3) .pc-fill { animation-delay: .75s; }
+
+  .pc-val {
+    font-family: var(--mono);
+    font-size: .82rem;
+    color: var(--fg);
+    text-align: right;
+    font-weight: 600;
+  }
+  .pc-val.dim { color: var(--fg-mute); font-weight: 500; }
+
+  /* ============ SLIDE 8 — CLOSING ============ */
+  .slide-closing {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8vh 12vw;
+    background: radial-gradient(circle at 50% 50%, rgba(77,208,225,.05), transparent 60%);
+  }
+  .closing-eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2rem;
+    opacity: .9;
+  }
+  .closing-title {
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -.02em;
+    margin-bottom: 1.4rem;
+    max-width: 22ch;
+  }
+  .closing-title em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .closing-sub {
+    font-size: clamp(1rem, 1.35vw, 1.15rem);
+    color: var(--fg-dim);
+    max-width: 40ch;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+  .closing-rule {
+    width: 60px; height: 2px;
+    background: var(--accent);
+    margin: 0 auto 1.4rem;
+    opacity: .8;
+  }
+  .closing-thanks {
+    font-family: var(--mono);
+    font-size: .82rem;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--fg-mute);
+  }
+
+  /* ============ SLIDE 9 — REFERENCES ============ */
+  .slide-refs h2 { margin-bottom: 1.6rem; }
+  .ref-list { display: flex; flex-direction: column; gap: .85rem; margin-top: .4rem; }
+  .ref-item {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 1rem;
+    align-items: start;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    transition: border-color .2s ease, transform .2s ease;
+  }
+  .ref-item:hover { border-color: var(--border-hi); transform: translateX(3px); }
+  .ref-num {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: .06em;
+    padding-top: .1rem;
+  }
+  .ref-item .ref-text {
+    font-size: .84rem;
+    color: var(--fg-dim);
+    line-height: 1.6;
+  }
+  .ref-item .ref-text strong { color: var(--fg); font-weight: 600; }
+  .ref-item .ref-text em { color: var(--fg); font-style: italic; opacity: .9; }
+  .ref-item .ref-text .journal { color: var(--accent); font-style: italic; opacity: .85; }
+
+  /* ============ NAVIGATION ============ */
+  .nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    background: rgba(20,24,28,.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: .45rem .9rem;
+    z-index: 100;
+    font-family: var(--mono);
+    font-size: .74rem;
+    color: var(--fg-dim);
+  }
+  .nav button {
+    background: transparent;
+    border: none;
+    color: var(--fg);
+    cursor: pointer;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    transition: background .2s ease, color .2s ease;
+  }
+  .nav button:hover { background: var(--accent); color: #0f1214; }
+  .nav .counter { letter-spacing: .1em; min-width: 54px; text-align: center; color: var(--fg); }
+  .nav .counter b { color: var(--accent); font-weight: 600; }
+  .nav .sep { width: 1px; height: 16px; background: var(--border); }
+  .nav .notes-btn {
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .1em;
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--fg-dim);
+    cursor: pointer;
+    transition: all .2s ease;
+    width: auto;
+    height: auto;
+  }
+  .nav .notes-btn:hover,
+  .nav .notes-btn.active {
+    background: var(--accent);
+    color: #0f1214;
+    border-color: var(--accent);
+  }
+
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    z-index: 200;
+    transition: width .5s ease;
+    opacity: .85;
+    width: 11%;
+  }
+
+  .hint {
+    position: fixed;
+    top: 18px; right: 22px;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .12em;
+    color: var(--fg-mute);
+    z-index: 100;
+    opacity: .7;
+    transition: opacity .3s ease;
+  }
+  .hint.reveal { opacity: 1; color: var(--accent); }
+
+  /* ============ NOTES PANEL ============ */
+  .notes-panel {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    max-height: 42vh;
+    background: rgba(15,18,20,.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-hi);
+    transform: translateY(100%);
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+    z-index: 150;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -20px 60px -10px rgba(0,0,0,.7);
+  }
+  .notes-panel.open { transform: translateY(0); }
+
+  .notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .9rem 1.8rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+  .notes-header .notes-title { display: flex; align-items: center; gap: .7rem; }
+  .notes-header .notes-title b { color: var(--accent); font-weight: 600; }
+  .notes-header .notes-title .icon {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .notes-header button {
+    background: transparent;
+    border: none;
+    color: var(--fg-dim);
+    font-family: var(--mono);
+    font-size: 1rem;
+    cursor: pointer;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    transition: all .2s ease;
+  }
+  .notes-header button:hover { background: rgba(239,83,80,.15); color: var(--danger); }
+  .notes-content {
+    padding: 1.4rem 1.8rem 1.8rem;
+    overflow-y: auto;
+    font-size: .95rem;
+    line-height: 1.75;
+    color: var(--fg);
+    max-width: 90ch;
+  }
+  .notes-content::before {
+    content: "";
+    display: block;
+    width: 30px; height: 2px;
+    background: var(--accent);
+    margin-bottom: 1rem;
+    opacity: .6;
+  }
+  .notes-content::-webkit-scrollbar { width: 6px; }
+  .notes-content::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 1024px) {
+    .slide { padding: 5vh 5vw; }
+    .slide-cover { grid-template-columns: 1fr; }
+    .cover-left { padding: 8vh 8vw 4vh; }
+    .cover-right { border-left: none; border-top: 1px solid var(--border); padding: 4vh 8vw 8vh; }
+    .stat-card { max-width: 100%; }
+  }
+  @media (max-width: 800px) {
+    html, body { overflow: auto; }
+    .deck { height: auto; min-height: 100vh; }
+    .slide { position: relative; display: none; min-height: 100vh; padding: 5vh 6vw; overflow-y: auto; }
+    .slide.active { display: flex; }
+    .slide-cover.active { display: grid; grid-template-columns: 1fr; }
+    .split, .transform, .addie-wrap, .chart-area, .dash-grid { grid-template-columns: 1fr; gap: 1.2rem; height: auto; max-height: none; }
+    .split-divider { writing-mode: horizontal-tb; padding: .4rem 0; }
+    .split-divider::before, .split-divider::after { width: 40%; height: 1px; }
+    .split { min-height: 400px; }
+    .challenge-grid { grid-template-columns: 1fr; }
+    .addie-cycle { max-width: 320px; }
+    .bar-row { grid-template-columns: 80px 1fr 48px; }
+    .hint { display: none; }
+    .notes-panel { max-height: 60vh; }
+  }
+
+  /* ============ PRINT ============ */
+  @media print {
+    html, body {
+      overflow: visible;
+      background: #0f1214;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .deck { height: auto; overflow: visible; }
+    .slide {
+      position: relative;
+      display: flex !important;
+      page-break-after: always;
+      break-after: page;
+      height: 100vh;
+      min-height: 100vh;
+      padding: 5vh 7vw;
+    }
+    .slide-cover.active { display: grid !important; }
+    .slide.active > *,
+    .slide.active .challenge-grid .challenge,
+    .slide.active .ref-list .ref-item,
+    .slide.active .flow .flow-step,
+    .slide.active .dash-grid .dash-card,
+    .slide.active .addie-cycle .addie-item,
+    .slide .stat-card,
+    .slide .chart-summary {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .slide .bar-fill,
+    .slide .pc-fill {
+      transform: scaleX(1) !important;
+      animation: none !important;
+    }
+    .slide:last-child { page-break-after: auto; break-after: auto; }
+    .nav, .progress, .hint, .notes-panel { display: none !important; }
+    @page { size: 1280px 720px; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="hint" id="hint">← → navigasi · N catatan · P cetak PDF</div>
+
+<div class="deck" id="deck">
+
+  <!-- ============ SLIDE 1 — COVER ============ -->
+  <section class="slide slide-cover active">
+    <div class="cover-left">
+      <div class="eyebrow">Tugas Mata Kuliah Literasi Big Data &amp; Coding</div>
+      <h1>Transformasi Bahan Ajar PAI ke Arah Digital</h1>
+      <p class="subtitle">Optimalisasi Pembelajaran di Era Teknologi Pendidikan</p>
+      <div class="divider"></div>
+      <div class="identity">
+        <strong>Muhammad Mushthofa Kamal</strong>
+        <span class="prodi">Program Studi S1 Pendidikan Agama Islam<br>
+        Fakultas Ilmu Tarbiyah dan Keguruan</span>
+      </div>
+    </div>
+
+    <div class="cover-right">
+      <div class="stat-card">
+        <div class="stat-label-top">Penetrasi Internet Indonesia</div>
+        <div class="stat-number">
+          <span class="count-num" data-target="78.19" data-decimals="2">0</span><span>%</span>
+        </div>
+        <div class="stat-desc">
+          Modal infrastruktur digital untuk mendorong transformasi ruang-ruang kelas secara serius.
+        </div>
+        <div class="stat-source">Sumber · APJII 2023</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 2 — REALITA ============ -->
+  <section class="slide">
+    <div class="eyebrow">Realita · Karakteristik Siswa</div>
+    <h2>Realita Pembelajaran <em>Generasi Digital</em></h2>
+
+    <div class="split">
+      <div class="split-panel old">
+        <div class="tag">Metode Konvensional</div>
+        <h3>Buku Teks Tebal, Satu Arah</h3>
+        <div class="visual">
+          <div class="book-stack">
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+            <div class="book"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="split-divider">VS</div>
+
+      <div class="split-panel new">
+        <div class="tag">Pembelajaran Digital</div>
+        <h3>Visual, Interaktif, Fleksibel</h3>
+        <div class="visual">
+          <div class="phone">
+            <div class="phone-video">▶</div>
+            <div class="phone-line accent"></div>
+            <div class="phone-line w80"></div>
+            <div class="phone-line w60"></div>
+            <div class="phone-line w80"></div>
+            <div class="phone-line w60"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide3-notes">
+      <span class="chip">Digital Natives</span>
+      <span class="chip">Multimedia Interaktif</span>
+      <span class="chip">Belajar Kapan Saja</span>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 3 — DEFINISI & URGENSI ============ -->
+  <section class="slide">
+    <div class="eyebrow">Definisi · Urgensi</div>
+    <h2>Dari Teks Cetak Menuju <em>E-Module &amp; E-Book</em></h2>
+
+    <div class="transform">
+      <div class="transform-box from">
+        <div class="stage-label">Sebelum</div>
+        <div class="book-mini"></div>
+        <h3>Buku Kertas</h3>
+        <div class="sub">Teks statis, satu arah</div>
+      </div>
+
+      <div class="transform-arrow">
+        <span>TRANSFORMASI</span>
+        <span class="arrow-line">⟶</span>
+      </div>
+
+      <div class="transform-box to">
+        <div class="stage-label">Sesudah</div>
+        <h3>Ekosistem Digital</h3>
+        <div class="sub">Visual · Audio · Partisipatif</div>
+        <div class="eco-icons">
+          <div class="eco">▶</div>
+          <div class="eco">♪</div>
+          <div class="eco">?</div>
+          <div class="eco">✎</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide3-notes">
+      <span class="chip danger">✕ Hindari "Digitalisasi Semu"</span>
+      <span class="chip">✓ E-Module Sistematis</span>
+      <span class="chip">✓ Interaktif &amp; Bermakna</span>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 4 — TANTANGAN ============ -->
+  <section class="slide">
+    <div class="eyebrow">Tantangan · Hambatan</div>
+    <h2>Tantangan yang <em>Dihadapi Saat Ini</em></h2>
+
+    <div class="challenge-grid">
+      <div class="challenge c1">
+        <div class="ch-num">TANTANGAN · 01</div>
+        <div class="ch-icon">⚡</div>
+        <h3>Kesenjangan Literasi Digital Guru</h3>
+        <p>Banyak pendidik masih kesulitan menggunakan <em>Learning Management System</em> maupun perangkat multimedia pendukung.</p>
+      </div>
+
+      <div class="challenge c2">
+        <div class="ch-num">TANTANGAN · 02</div>
+        <div class="ch-icon">⚠</div>
+        <h3>Keterbatasan Infrastruktur &amp; Akses</h3>
+        <p>Efektivitas bahan ajar sangat bergantung pada kesiapan infrastruktur — sehingga bahan cetak pun terkadang masih dipertahankan.</p>
+      </div>
+
+      <div class="challenge c3">
+        <div class="ch-num">TANTANGAN · 03</div>
+        <div class="ch-icon">◇</div>
+        <h3>Distraksi &amp; Konten Tak Tervalidasi</h3>
+        <p>Derasnya arus internet membawa risiko distraksi serta paparan konten keagamaan yang minim landasan ilmiah.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 5 — SOLUSI ADDIE ============ -->
+  <section class="slide">
+    <div class="eyebrow">Solusi · Kerangka Kerja</div>
+    <h2>Model Pengembangan <em>ADDIE</em></h2>
+
+    <div class="addie-wrap">
+      <div class="addie-text">
+        <h3>Kerangka Kerja Terstruktur</h3>
+        <p>
+          Pengembangan bahan ajar yang efektif dilakukan melalui lima tahap
+          berurutan — mulai dari analisis kebutuhan hingga evaluasi menyeluruh.
+          Materi PAI diracik menggunakan aplikasi pembuat media interaktif.
+        </p>
+        <div class="soft-list">
+          <span class="soft">Canva</span>
+          <span class="soft">CapCut</span>
+          <span class="soft">Flip PDF</span>
+          <span class="soft">OBS Studio</span>
+        </div>
+      </div>
+
+      <div class="addie-cycle">
+        <div class="addie-center">
+          <strong>A+</strong>
+          Bahan Ajar<br>PAI Digital
+        </div>
+        <div class="addie-item"><small>01</small>Analysis</div>
+        <div class="addie-item"><small>02</small>Design</div>
+        <div class="addie-item"><small>03</small>Development</div>
+        <div class="addie-item"><small>04</small>Implementation</div>
+        <div class="addie-item"><small>05</small>Evaluation</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 6 — KELAYAKAN ============ -->
+  <section class="slide">
+    <div class="eyebrow">Kualitas · Standar Akademis</div>
+    <h2>Karakteristik <em>Kelayakan</em> Bahan Ajar Digital</h2>
+
+    <div class="chart-area">
+      <div class="chart-bars">
+        <div class="bar-row">
+          <div class="bar-label">Isi</div>
+          <div class="bar-track"><div class="bar-fill" style="width:89%;"></div></div>
+          <div class="bar-value">89%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Penyajian</div>
+          <div class="bar-track"><div class="bar-fill" style="width:87%;"></div></div>
+          <div class="bar-value">87%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Bahasa</div>
+          <div class="bar-track"><div class="bar-fill" style="width:86%;"></div></div>
+          <div class="bar-value">86%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Grafika</div>
+          <div class="bar-track"><div class="bar-fill" style="width:88%;"></div></div>
+          <div class="bar-value">88%</div>
+        </div>
+      </div>
+
+      <div class="chart-summary">
+        <div class="big-avg">
+          <span class="count-num" data-target="87.5" data-decimals="1">0</span><span style="font-size:.55em;">%</span>
+        </div>
+        <div class="avg-label">Rerata Kelayakan</div>
+        <p>Media non-cetak yang dikembangkan dengan prinsip pedagogi yang benar terbukti valid secara empiris.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 7 — ESTIMASI HASIL ============ -->
+  <section class="slide">
+    <div class="eyebrow">Dampak · Data Konkret</div>
+    <h2>Estimasi Hasil &amp; <em>Dampak Nyata</em></h2>
+
+    <div class="dash-grid">
+      <div class="dash-card pref">
+        <div class="dash-label"><span class="dot"></span>Preferensi Siswa</div>
+        <div class="dash-number">
+          <span class="count-num" data-target="86.7" data-decimals="1">0</span><span class="pct">%</span>
+        </div>
+        <div class="dash-desc">
+          Peserta didik lebih menyukai pembelajaran berbasis digital dibanding bahan ajar konvensional.
+        </div>
+      </div>
+
+      <div class="dash-card pass">
+        <div class="dash-label"><span class="dot"></span>Ketuntasan Belajar</div>
+        <div class="dash-number">
+          <span class="count-num" data-target="90" data-decimals="0">0</span><span class="pct">%</span>
+        </div>
+        <div class="dash-desc">
+          Tingkat ketuntasan siswa setelah menggunakan <em>e-module</em> dan <em>e-book</em> interaktif.
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-comparison">
+      <div class="pc-label">Perbandingan Ketuntasan — Sebelum vs. Sesudah</div>
+      <div class="pc-row">
+        <div class="pc-label-side">Sebelum</div>
+        <div class="pc-track"><div class="pc-fill before"></div></div>
+        <div class="pc-val dim">46,7%</div>
+      </div>
+      <div class="pc-row">
+        <div class="pc-label-side">Sesudah</div>
+        <div class="pc-track"><div class="pc-fill after"></div></div>
+        <div class="pc-val">90%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SLIDE 8 — KESIMPULAN ============ -->
+  <section class="slide slide-closing">
+    <div class="closing-eyebrow">Kesimpulan</div>
+    <h1 class="closing-title">
+      Digitalisasi adalah <em>Kebutuhan Strategis</em>
+    </h1>
+    <p class="closing-sub">
+      Mencetak generasi yang tidak hanya melek teknologi,
+      tetapi juga memiliki fondasi akhlak yang tangguh.
+    </p>
+    <div class="closing-rule"></div>
+    <div class="closing-thanks">Terima Kasih · Wassalamualaikum</div>
+  </section>
+
+  <!-- ============ SLIDE 9 — DAFTAR PUSTAKA ============ -->
+  <section class="slide slide-refs">
+    <div class="eyebrow">Referensi</div>
+    <h2>Daftar <em>Pustaka</em></h2>
+
+    <div class="ref-list">
+      <div class="ref-item">
+        <div class="ref-num">01</div>
+        <div class="ref-text">
+          <strong>APJII.</strong> (2024). <em>Survei Internet Indonesia 2023–2024</em>. Asosiasi Penyelenggara Jasa Internet Indonesia.
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">02</div>
+        <div class="ref-text">
+          <strong>Arifin, B., dkk.</strong> (2023). Transformasi Bahan Ajar Pendidikan Dasar Ke Arah Digital. <span class="journal">INNOVATIVE: Journal of Social Science Research</span>.
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">03</div>
+        <div class="ref-text">
+          <strong>Marhamah, R., dkk.</strong> (2025). Tantangan dan Peluang dalam Pengembangan Bahan Ajar Pendidikan Agama Islam. <span class="journal">Jurnal Literasiologi</span>.
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">04</div>
+        <div class="ref-text">
+          <strong>Septianingsih, R., dkk.</strong> (2025). Analisis Kelayakan Bahan Ajar Cetak dan Digital dalam Pembelajaran. <span class="journal">Jurnal IKA: Ikatan Alumni PGSD UNARS</span>.
+        </div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-num">05</div>
+        <div class="ref-text">
+          <strong>Syarifuddin, A., dkk.</strong> (2026). Pengembangan Bahan Ajar Digital PAI (E-Module/E-Book) di Era Transformasi Pembelajaran Digital 2026. <span class="journal">Jurnal Edu Research</span>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============ NAVIGATION ============ -->
+<div class="nav">
+  <button id="prev" aria-label="Sebelumnya">‹</button>
+  <span class="counter"><b id="cur">1</b> / <span id="total">9</span></span>
+  <button id="next" aria-label="Berikutnya">›</button>
+  <span class="sep"></span>
+  <button class="notes-btn" id="notesBtn" title="Catatan Pembicara (N)">📝 Notes</button>
+</div>
+
+<!-- ============ NOTES PANEL ============ -->
+<div class="notes-panel" id="notesPanel">
+  <div class="notes-header">
+    <div class="notes-title">
+      <span class="icon"></span>
+      <span>Catatan Pembicara — Slide <b id="notesNum">1</b></span>
+    </div>
+    <button id="closeNotes" aria-label="Tutup">✕</button>
+  </div>
+  <div class="notes-content" id="notesContent"></div>
+</div>
+
+<script>
+  /* ============ DATA ============ */
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  let idx = 0;
+
+  const NOTES = [
+    `Assalamualaikum warahmatullahi wabarakatuh. Selamat pagi/siang semuanya. Perkenalkan saya Muhammad Mushthofa Kamal. Hari ini kita akan membahas sebuah urgensi penting di lingkungan Fakultas Ilmu Tarbiyah dan Keguruan, yaitu Transformasi Bahan Ajar ke Arah Digital. Mengutip dari hasil Survei Asosiasi Penyelenggara Jasa Internet Indonesia (APJII) tahun 2023, tingkat penetrasi internet di Indonesia telah mencapai 78,19%. Angka ini adalah modal infrastruktur yang luar biasa besar bagi kita untuk mulai mendigitalisasi ruang-ruang kelas secara serius.`,
+
+    `Kita saat ini sedang berhadapan dengan generasi digital natives. Mengutip dari penelitian Revan Marhamah dan rekan-rekan, dinyatakan bahwa generasi digital memiliki karakteristik belajar yang lebih cepat bosan dengan metode ceramah, dan jauh lebih tertarik pada media visual atau multimedia interaktif. Realita ini tentu cukup mengejutkan sebagian pendidik. Seperti yang dikemukakan dalam riset Buatanol Arifin dkk, tren literasi digital memaksa pendidik yang terbiasa dengan metode konvensional untuk segera beradaptasi, karena proses belajar peserta didik kini bisa terjadi kapan saja dan di mana saja.`,
+
+    `Oleh karena itu, transformasi bahan ajar bukan sekadar men-scan buku menjadi file PDF. Mengutip dari riset Ahmad Syarifuddin dkk, transformasi pada saat ini menuntut adanya inovasi bahan ajar Pendidikan Agama Islam (PAI) menjadi e-module dan e-book yang disusun secara sistematis serta interaktif. Jika kita hanya menyajikan materi teks di layar, siswa akan kehilangan minat. Bahan ajar digital harus memadukan pendekatan visual, audio, dan partisipatif agar esensi nilai keislaman tersampaikan dengan optimal.`,
+
+    `Tentu pergeseran ini tidak mudah. Mengutip dari analisis Marhamah dkk, tantangan terbesar adalah rendahnya literasi digital guru, di mana banyak yang kesulitan menggunakan Learning Management System atau perangkat multimedia. Selain itu, mengutip studi dari Reno Septianingsih dan tim, efektivitas penggunaan bahan ajar sangat bergantung pada kesiapan infrastruktur, sehingga bahan cetak pun terkadang masih dipertahankan. Tantangan lainnya adalah derasnya arus internet yang membawa risiko distraksi serta paparan konten yang kebenarannya minim landasan ilmiah.`,
+
+    `Untuk menjawab tantangan tersebut, kita membutuhkan kerangka kerja yang jelas. Mengutip penelitian Syarifuddin dkk, pengembangan bahan ajar yang efektif dapat dilakukan menggunakan model ADDIE—mulai dari Analisis kebutuhan hingga Evaluasi. Dengan pendekatan ini, materi-materi PAI bisa diracik menggunakan aplikasi pembuat media interaktif. Sebagai contoh, materi sejarah Islam atau bacaan Al-Qur'an dapat diintegrasikan dengan video pembelajaran dan tilawah audio, sehingga suasana belajar menjadi jauh lebih hidup.`,
+
+    `Meskipun tampilannya canggih, standar akademis tetaplah yang utama. Mengutip temuan Reno Septianingsih dkk, kelayakan sebuah bahan ajar digital harus diukur secara ketat melalui empat aspek: isi, desain atau penyajian, kebahasaan, dan kegrafikan. Data riset menunjukkan bahwa media non-cetak yang dikembangkan dengan prinsip pedagogi yang benar mampu memperoleh validasi dari ahli materi dan media hingga di atas 87%. Ini membuktikan bahwa bahan ajar digital sangat terstandarisasi dan layak digunakan.`,
+
+    `Lalu, bagaimana hasil implementasinya di lapangan? Data konkretnya sangat menggembirakan. Mengutip kembali penelitian Syarifuddin dkk, implementasi e-module dan e-book interaktif membuktikan bahwa 86,7% peserta didik lebih menyukai pembelajaran berbasis digital. Tidak hanya sekadar suka, tingkat ketuntasan belajar mereka melonjak drastis, dari yang awalnya hanya 46,7% menjadi 90% pasca-penggunaan bahan ajar ini. Ini adalah bukti empiris bahwa transformasi digital benar-benar memberikan dampak terukur pada aspek kognitif siswa.`,
+
+    `Sebagai kesimpulan, di era technology cybernetics ini, pergeseran pendidikan ke arah digital tidak bisa dihentikan. Pengembangan bahan ajar digital bukan lagi sekadar pelengkap, melainkan kebutuhan strategis. Mengutip pandangan Marhamah dkk, dengan memaksimalkan peluang multimedia dan memperkuat literasi, kita dapat menjadikan pembelajaran agama lebih relevan dan bermakna. Tujuannya satu: mencetak generasi yang tidak hanya melek teknologi, tetapi juga memiliki fondasi akhlak yang tangguh. Terima kasih atas perhatiannya, Wassalamualaikum warahmatullahi wabarakatuh.`,
+
+    `Berikut adalah daftar referensi serta data konkret yang menjadi landasan utama dari ulasan presentasi hari ini, mencakup data survei internet APJII serta jurnal-jurnal ilmiah terbaru terkait literasi dan pengembangan bahan ajar pendidikan.`
+  ];
+
+  /* ============ ELEMENTS ============ */
+  const el = {
+    cur:          document.getElementById('cur'),
+    total:        document.getElementById('total'),
+    progress:     document.getElementById('progress'),
+    notesPanel:   document.getElementById('notesPanel'),
+    notesBtn:     document.getElementById('notesBtn'),
+    notesNum:     document.getElementById('notesNum'),
+    notesContent: document.getElementById('notesContent'),
+    deck:         document.getElementById('deck'),
+    hint:         document.getElementById('hint'),
+  };
+
+  el.total.textContent = total;
+
+  /* ============ COUNTER ANIMATION ============ */
+  let counterSeq = 0;
+  function runCounters(slide) {
+    const seq = ++counterSeq;
+    slide.querySelectorAll('[data-target]').forEach(node => {
+      const target   = parseFloat(node.dataset.target);
+      const decimals = parseInt(node.dataset.decimals || '0', 10);
+      const duration = 1400;
+      const delay    = 350; // tunggu slide mulai masuk
+      const startAt  = performance.now() + delay;
+
+      function tick(now) {
+        if (seq !== counterSeq) return; // dibatalkan oleh slide baru
+        const elapsed = now - startAt;
+        const t = Math.min(1, Math.max(0, elapsed / duration));
+        const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        const val = target * eased;
+        node.textContent = val.toFixed(decimals).replace('.', ',');
+        if (t < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          node.textContent = target.toFixed(decimals).replace('.', ',');
+        }
+      }
+      node.textContent = (0).toFixed(decimals).replace('.', ',');
+      requestAnimationFrame(tick);
+    });
+  }
+
+  /* ============ NAVIGATION ============ */
+  function show(n, opts = {}) {
+    idx = Math.max(0, Math.min(total - 1, n));
+
+    // Hapus .active dari semua slide, paksa reflow, lalu tambahkan kembali.
+    // Ini memicu ulang CSS animation (fadeUp + grow bar).
+    slides.forEach(s => s.classList.remove('active'));
+    void document.body.offsetHeight; // force reflow
+    slides[idx].classList.add('active');
+
+    // Update UI
+    el.cur.textContent = idx + 1;
+    el.progress.style.width = ((idx + 1) / total * 100) + '%';
+
+    // Update speaker notes
+    el.notesNum.textContent = idx + 1;
+    el.notesContent.textContent = NOTES[idx] || '(Tidak ada catatan untuk slide ini.)';
+    el.notesContent.scrollTop = 0;
+
+    // Jalankan counter (kecuali sedang print)
+    if (!opts.silent) runCounters(slides[idx]);
+  }
+
+  /* ============ CLICK TO RE-ANIMATE ============ */
+  function replayAnimations() {
+    const cur = slides[idx];
+    cur.classList.remove('active');
+    void cur.offsetHeight;
+    cur.classList.add('active');
+    runCounters(cur);
+    // Optional: feedback halus di hint
+    el.hint.classList.add('reveal');
+    clearTimeout(el.hint._t);
+    el.hint._t = setTimeout(() => el.hint.classList.remove('reveal'), 700);
+  }
+
+  el.deck.addEventListener('click', (e) => {
+    // Abaikan klik pada tombol/link/nav/notes
+    if (e.target.closest('button, a, .nav, .notes-panel')) return;
+    replayAnimations();
+  });
+
+  document.getElementById('prev').addEventListener('click', () => show(idx - 1));
+  document.getElementById('next').addEventListener('click', () => show(idx + 1));
+
+  /* ============ NOTES TOGGLE ============ */
+  function toggleNotes(force) {
+    const open = force !== undefined ? force : !el.notesPanel.classList.contains('open');
+    el.notesPanel.classList.toggle('open', open);
+    el.notesBtn.classList.toggle('active', open);
+  }
+  el.notesBtn.addEventListener('click', () => toggleNotes());
+  document.getElementById('closeNotes').addEventListener('click', () => toggleNotes(false));
+
+  /* ============ KEYBOARD ============ */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault(); show(idx + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault(); show(idx - 1);
+    } else if (e.key === 'Home') {
+      show(0);
+    } else if (e.key === 'End') {
+      show(total - 1);
+    } else if (e.key === 'n' || e.key === 'N') {
+      e.preventDefault(); toggleNotes();
+    } else if (e.key === 'r' || e.key === 'R') {
+      e.preventDefault(); replayAnimations();
+    } else if (e.key === 'p' || e.key === 'P') {
+      window.print();
+    } else if (e.key === 'Escape') {
+      toggleNotes(false);
+    }
+  });
+
+  /* ============ SWIPE ============ */
+  let touchX = 0;
+  document.addEventListener('touchstart', e => touchX = e.touches[0].clientX, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 60) show(dx < 0 ? idx + 1 : idx - 1);
+  }, { passive: true });
+
+  /* ============ INIT ============ */
+  show(0);
+</script>
+
+</body>
+</html>
