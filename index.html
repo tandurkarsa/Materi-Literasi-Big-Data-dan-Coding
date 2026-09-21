@@ -1291,12 +1291,16 @@
     .slide.active .ref-list .ref-item,
     .slide.active .flow .flow-step,
     .slide.active .dash-grid .dash-card,
-    .slide.active .addie-cycle .addie-item,
     .slide .stat-card,
     .slide .chart-summary {
       animation: none !important;
       opacity: 1 !important;
       transform: none !important;
+    }
+    /* ADDIE items butuh transform untuk centering — jangan di-reset */
+    .slide.active .addie-cycle .addie-item {
+      animation: none !important;
+      opacity: 1 !important;
     }
     .slide .bar-fill,
     .slide .pc-fill {
@@ -1780,6 +1784,16 @@
     const dx = e.changedTouches[0].clientX - touchX;
     if (Math.abs(dx) > 60) show(dx < 0 ? idx + 1 : idx - 1);
   }, { passive: true });
+  
+  /* ============ FREEZE COUNTERS ON PRINT ============ */
+  window.addEventListener('beforeprint', () => {
+    counterSeq++; // batalkan animasi counter yang sedang berjalan
+    document.querySelectorAll('[data-target]').forEach(node => {
+      const target   = parseFloat(node.dataset.target);
+      const decimals = parseInt(node.dataset.decimals || '0', 10);
+      node.textContent = target.toFixed(decimals).replace('.', ',');
+    });
+  });
 
   /* ============ INIT ============ */
   show(0);
